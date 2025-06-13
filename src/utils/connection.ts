@@ -46,6 +46,7 @@ export async function createSalesforceConnection(config?: ConnectionConfig) {
       
       // Make the token request
       const tokenResponse = await new Promise<any>((resolve, reject) => {
+        console.error('Making OAuth token request to:', tokenUrl.toString());
         const req = https.request({
           method: 'POST',
           hostname: tokenUrl.hostname,
@@ -60,20 +61,25 @@ export async function createSalesforceConnection(config?: ConnectionConfig) {
             data += chunk;
           });
           res.on('end', () => {
+            console.error('OAuth response status:', res.statusCode);
+            console.error('OAuth response headers:', res.headers);
             try {
               const parsedData = JSON.parse(data);
+              console.error('OAuth response data:', parsedData);
               if (res.statusCode !== 200) {
                 reject(new Error(`OAuth token request failed: ${parsedData.error} - ${parsedData.error_description}`));
               } else {
                 resolve(parsedData);
               }
             } catch (e: unknown) {
+              console.error('Failed to parse OAuth response:', e);
               reject(new Error(`Failed to parse OAuth response: ${e instanceof Error ? e.message : String(e)}`));
             }
           });
         });
         
         req.on('error', (e) => {
+          console.error('OAuth request error:', e);
           reject(new Error(`OAuth request error: ${e.message}`));
         });
         

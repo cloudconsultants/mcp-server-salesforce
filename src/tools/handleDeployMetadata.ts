@@ -1,5 +1,5 @@
 import jsforce from 'jsforce';
-import { validateFlowXML } from './validateFlowXML'; // adjust path as needed
+import { validateFlowXML } from './validateFlowXML.js';
 
 export interface DeployMetadataArgs {
   metadataType: string;
