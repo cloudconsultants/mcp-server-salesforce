@@ -35,15 +35,18 @@ export async function handleDeployMetadata(conn: any, args: DeployMetadataArgs) 
       fileName = `${args.metadataName}.flow-meta.xml`;
     }
     zip.folder(typeFolder)?.file(fileName, args.metadataContent);
-    // Add a minimal package.xml
+    
+    // Add package.xml with the same structure as the reference
     zip.file('package.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
-  <types>
-    <members>${args.metadataName}</members>
-    <name>${args.metadataType}</name>
-  </types>
-  <version>58.0</version>
+    <fullName>${args.metadataName}</fullName>
+    <types>
+        <members>${args.metadataName}</members>
+        <name>${args.metadataType}</name>
+    </types>
+    <version>50.0</version>
 </Package>`);
+    
     const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
 
     const result = await conn.metadata.deploy(zipBuffer, {

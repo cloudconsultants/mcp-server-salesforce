@@ -1,8 +1,9 @@
-// New tool definition
-const DEPLOY_METADATA = {
+import { Tool } from "@modelcontextprotocol/sdk/types.js";
+
+export const DEPLOY_METADATA: Tool = {
   name: "salesforce_deploy_metadata",
   description: "Deploy Salesforce metadata (Flows, Apex, etc.) to the org",
-  parameters: {
+  inputSchema: {
     type: "object",
     properties: {
       metadataType: {
@@ -27,3 +28,12 @@ const DEPLOY_METADATA = {
     required: ["metadataType", "metadataName", "metadataContent"]
   }
 };
+
+export interface DeployMetadataArgs {
+  metadataType: string;
+  metadataName: string;
+  metadataContent: string;
+  checkOnly?: boolean;
+}
+
+export { handleDeployMetadata } from './handleDeployMetadata.js';

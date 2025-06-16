@@ -24,8 +24,36 @@ import { READ_APEX_TRIGGER, handleReadApexTrigger, ReadApexTriggerArgs } from ".
 import { WRITE_APEX_TRIGGER, handleWriteApexTrigger, WriteApexTriggerArgs } from "./tools/writeApexTrigger.js";
 import { EXECUTE_ANONYMOUS, handleExecuteAnonymous, ExecuteAnonymousArgs } from "./tools/executeAnonymous.js";
 import { MANAGE_DEBUG_LOGS, handleManageDebugLogs, ManageDebugLogsArgs } from "./tools/manageDebugLogs.js";
+import { DEPLOY_METADATA, handleDeployMetadata, DeployMetadataArgs } from "./tools/deployMetadata.js";
+import { RETRIEVE_METADATA, handleRetrieveMetadata, RetrieveMetadataArgs } from "./tools/retrieveMetadata.js";
 
 dotenv.config();
+
+const tools = [
+  SEARCH_OBJECTS, 
+  DESCRIBE_OBJECT, 
+  QUERY_RECORDS, 
+  AGGREGATE_QUERY,
+  DML_RECORDS,
+  MANAGE_OBJECT,
+  MANAGE_FIELD,
+  MANAGE_FIELD_PERMISSIONS,
+  SEARCH_ALL,
+  READ_APEX,
+  WRITE_APEX,
+  READ_APEX_TRIGGER,
+  WRITE_APEX_TRIGGER,
+  EXECUTE_ANONYMOUS,
+  MANAGE_DEBUG_LOGS,
+  DEPLOY_METADATA,
+  RETRIEVE_METADATA
+];
+
+// Create tools object for capabilities
+const toolsObject = tools.reduce((acc, tool) => {
+  acc[tool.name] = tool;
+  return acc;
+}, {} as Record<string, any>);
 
 const server = new Server(
   {
@@ -34,31 +62,20 @@ const server = new Server(
   },
   {
     capabilities: {
-      tools: {},
+      tools: toolsObject,
     },
   },
 );
 
+// Add debug logging for tool registration
+console.error("Initializing server with tools:", tools.map(t => t.name));
+
 // Tool handlers
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    SEARCH_OBJECTS, 
-    DESCRIBE_OBJECT, 
-    QUERY_RECORDS, 
-    AGGREGATE_QUERY,
-    DML_RECORDS,
-    MANAGE_OBJECT,
-    MANAGE_FIELD,
-    MANAGE_FIELD_PERMISSIONS,
-    SEARCH_ALL,
-    READ_APEX,
-    WRITE_APEX,
-    READ_APEX_TRIGGER,
-    WRITE_APEX_TRIGGER,
-    EXECUTE_ANONYMOUS,
-    MANAGE_DEBUG_LOGS
-  ],
-}));
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  console.error("ListToolsRequestSchema handler called");
+  console.error("Returning tools:", tools.map(t => t.name));
+  return { tools };
+});
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
@@ -316,6 +333,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
 
         return await handleManageDebugLogs(conn, validatedArgs);
+      }
+
+      case "salesforce_deploy_metadata": {
+        const deployArgs = args as Record<string, unknown>;
+        if (!deployArgs.metadataType || !deployArgs.metadataName || !deployArgs.metadataContent) {
+          throw new Error('metadataType, metadataName, and metadataContent are required for metadata deployment');
+        }
+        const validatedArgs: DeployMetadataArgs = {
+          metadataType: deployArgs.metadataType as string,
+          metadataName: deployArgs.metadataName as string,
+          metadataContent: deployArgs.metadataContent as string,
+          checkOnly: deployArgs.checkOnly as boolean | undefined
+        };
+        return await handleDeployMetadata(conn, validatedArgs);
+      }
+
+      case "salesforce_retrieve_metadata": {
+        const retrieveArgs = args as Record<string, unknown>;
+        if (!retrieveArgs.metadataType || !retrieveArgs.metadataName) {
+          throw new Error('metadataType and metadataName are required for metadata retrieval');
+        }
+        const validatedArgs: RetrieveMetadataArgs = {
+          metadataType: retrieveArgs.metadataType as string,
+          metadataName: retrieveArgs.metadataName as string
+        };
+        return await handleRetrieveMetadata(conn, validatedArgs);
       }
 
       default:
