@@ -1,23 +1,10 @@
 import { XMLParser } from 'fast-xml-parser';
 
-export function generateFlowXML(flowName: string, label?: string, description?: string) {
+export function generateFlowXML(flowName: string, description: string = '', label: string = ''): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata" fullName="${flowName}">
   <apiVersion>58.0</apiVersion>
-  <assignments>
-    <name>myAssignment</name>
-    <label>My Assignment</label>
-    <locationX>176</locationX>
-    <locationY>134</locationY>
-    <assignmentItems>
-      <assignToReference>var1</assignToReference>
-      <operator>Assign</operator>
-      <value>
-        <numberValue>1.0</numberValue>
-      </value>
-    </assignmentItems>
-  </assignments>
-  <description>${description || 'Minimal valid flow'}</description>
+  <description>${description || 'Flow created via MCP'}</description>
   <label>${label || flowName}</label>
   <processMetadataValues>
     <name>BuilderType</name>
@@ -31,9 +18,9 @@ export function generateFlowXML(flowName: string, label?: string, description?: 
       <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
     </value>
   </processMetadataValues>
-  <processType>Flow</processType>
+  <processType>AutoLaunchedFlow</processType>
   <start>
-    <locationX>50</locationX>
+    <locationX>176</locationX>
     <locationY>0</locationY>
     <connector>
       <targetReference>myAssignment</targetReference>
@@ -41,12 +28,33 @@ export function generateFlowXML(flowName: string, label?: string, description?: 
   </start>
   <status>Active</status>
   <variables>
-    <name>var1</name>
-    <dataType>Number</dataType>
+    <name>myVariable</name>
+    <dataType>String</dataType>
     <isCollection>false</isCollection>
     <isInput>false</isInput>
     <isOutput>false</isOutput>
-    <scale>0</scale>
   </variables>
+  <assignments>
+    <name>myAssignment</name>
+    <label>Assignment</label>
+    <locationX>176</locationX>
+    <locationY>134</locationY>
+    <assignmentItems>
+      <assignToReference>myVariable</assignToReference>
+      <operator>Assign</operator>
+      <value>
+        <stringValue>Hello World</stringValue>
+      </value>
+    </assignmentItems>
+    <connector>
+      <targetReference>myFlowEnd</targetReference>
+    </connector>
+  </assignments>
+  <flowEnd>
+    <name>myFlowEnd</name>
+    <label>End</label>
+    <locationX>176</locationX>
+    <locationY>268</locationY>
+  </flowEnd>
 </Flow>`;
 } 

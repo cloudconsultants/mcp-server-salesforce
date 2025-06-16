@@ -346,7 +346,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           metadataContent: deployArgs.metadataContent as string,
           checkOnly: deployArgs.checkOnly as boolean | undefined
         };
-        return await handleDeployMetadata(conn, validatedArgs);
+        return await handleDeployMetadata(validatedArgs);
       }
 
       case "salesforce_retrieve_metadata": {
